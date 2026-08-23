@@ -1,0 +1,82 @@
+# Signal Zero, {{ date }}
+
+{{ counts.scored }} papers scored across {{ categories|join(", ") }}. Scores use only what
+existed at publication time. Nothing below is ranked on upvotes, stars or citations.
+{% if degraded %}
+
+Note: this run scored papers with keyword rules because no model was reachable. Treat the
+ranking as provisional.
+{% endif %}
+
+## Confidence
+
+Ranked by combined score, author prior included.
+{% for paper in buckets.confidence %}
+
+### {{ loop.index }}. {{ paper.title }}
+
+{{ paper.summary }}
+
+- Score {{ "%.2f"|format(paper.score) }}, claim {{ "%.2f"|format(paper.claim_score) }}, author prior {{ paper.prior_text }}
+- Capability delta {{ paper.capability_total }}/12: {{ paper.axis_line }}
+{% for axis, why in paper.axis_reasons %}
+    - {{ axis }}: {{ why }}
+{% endfor %}
+- {{ paper.compute_text }}
+- {{ paper.claim_text }}
+- Code: {{ paper.code_text }}
+- {{ paper.authors_text }} | {{ paper.categories_text }} | [arXiv:{{ paper.arxiv_id }}]({{ paper.abs_url }})
+{% else %}
+
+Nothing cleared the bar today.
+{% endfor %}
+
+## High variance
+
+Unknown or low author prior, large claim. Ranked on claim size alone. Most of these are
+noise. The point of the bucket is that a prior-weighted ranking would never show them.
+{% for paper in buckets.high_variance %}
+
+### {{ loop.index }}. {{ paper.title }}
+
+{{ paper.summary }}
+
+- Claim {{ "%.2f"|format(paper.claim_score) }}, author prior {{ paper.prior_text }}
+- Capability delta {{ paper.capability_total }}/12: {{ paper.axis_line }}
+- {{ paper.compute_text }}
+- {{ paper.claim_text }}
+- Code: {{ paper.code_text }}
+- {{ paper.authors_text }} | {{ paper.categories_text }} | [arXiv:{{ paper.arxiv_id }}]({{ paper.abs_url }})
+{% else %}
+
+No paper met the claim threshold today.
+{% endfor %}
+{% if lab_posts %}
+
+## Lab posts
+
+{% for post in lab_posts %}
+- {{ post.lab }}: [{{ post.title }}]({{ post.url }})
+{% endfor %}
+{% endif %}
+
+## Prediction log
+{% if calibration.labelled_total %}
+
+{{ calibration.labelled_total }} papers now carry an outcome label at t+{{ label_horizon }}.
+
+| Ranking | Runs graded | Precision@{{ calibration.k }} | Base rate | Lift |
+| --- | --- | --- | --- | --- |
+{% for name, stats in calibration.buckets.items() %}
+{% if stats.runs %}
+| {{ name }} | {{ stats.runs }} | {{ "%.2f"|format(stats.precision) }} | {{ "%.2f"|format(stats.base_rate) }} | {{ "%.2f"|format(stats.lift) }}x |
+{% endif %}
+{% endfor %}
+{% else %}
+
+No outcome labels yet. The first land {{ label_horizon }} days after the first scored day.
+{% endif %}
+
+---
+
+Run {{ run_id }}. {{ spend.calls }} model calls, {{ spend.input_tokens }} tokens in, {{ spend.output_tokens }} out, ${{ "%.4f"|format(spend.cost_usd) }}.

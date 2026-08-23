@@ -1,0 +1,56 @@
+name: outcomes
+
+# Revisits scored papers at t+7, t+30 and t+90 and records what happened. This table is
+# the asset. It can only be accumulated forwards in time, so a missed day is collected
+# on the next run rather than lost.
+on:
+  schedule:
+    - cron: "43 6 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Treat this date as today (YYYY-MM-DD)"
+        required: false
+      limit:
+        description: "Cap observations collected this run"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: signal-zero-outcomes
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Collect due observations
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+        run: |
+          python -m src.cli outcomes \
+            ${{ inputs.date && format('--date {0}', inputs.date) || '' }} \
+            ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+
+      - name: Print calibration so far
+        run: python -m src.cli calibration
+
+      - name: Commit observations
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "outcomes: observations for ${{ inputs.date || 'today' }}"
+          file_pattern: data/signal.db

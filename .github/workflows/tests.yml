@@ -1,0 +1,22 @@
+name: tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      # test_no_leakage.py is the one that must never go red. If a day-zero module
+      # gains access to outcome data, everything downstream stops meaning anything.
+      - run: python -m pytest -q

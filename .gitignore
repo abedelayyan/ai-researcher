@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+data/cache/
+data/costs/*.jsonl
+!data/costs/.gitkeep
+site/build/
+
+# SQLite side files
+*.db-wal
+*.db-shm

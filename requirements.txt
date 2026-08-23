@@ -1,0 +1,8 @@
+# Phase 1 runtime dependencies. Section 13 of the project spec.
+httpx>=0.27
+feedparser>=6.0
+Jinja2>=3.1
+PyYAML>=6.0
+
+# Phase 2 additions (clustering, idea memory) are not installed yet:
+#   sentence-transformers, sqlite-vec

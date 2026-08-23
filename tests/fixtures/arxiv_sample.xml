@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title type="html">ArXiv Query: search_query=(cat:cs.AI OR cat:cs.LG)</title>
+  <id>http://arxiv.org/api/fixture</id>
+  <updated>2026-08-21T00:00:00-04:00</updated>
+  <opensearch:totalResults xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">12</opensearch:totalResults>
+<entry>
+  <id>http://arxiv.org/abs/2608.01001v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>FlashKV: 12x cheaper long-context inference on a single consumer GPU</title>
+  <summary>Serving long-context language models is bounded by key-value cache memory. We present FlashKV, a cache compression scheme that keeps quality within 0.3 points of full attention while cutting memory by 92%. On a single RTX 4090, FlashKV serves 128k-token contexts at 12x lower cost than the standard cache and improves throughput from 340 to 1180 tokens per second. Code is available at https://github.com/flashkv/flashkv.</summary>
+  <author><name>Wei Zhang</name></author>
+  <author><name>Ana Ferreira</name></author>
+  <author><name>Tom Beckett</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">14 pages. Code: https://github.com/flashkv/flashkv</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01001v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01001v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01002v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>A tighter convergence bound for adaptive gradient methods under heavy-tailed noise</title>
+  <summary>We study the convergence of adaptive gradient methods when stochastic gradients have heavy-tailed noise. We prove a bound that improves the dependence on the noise exponent and matches a lower bound up to logarithmic factors. Experiments on synthetic problems confirm the rate.</summary>
+  <author><name>Piotr Nowak</name></author>
+  <author><name>Helen Cross</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">32 pages, theory only</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01002v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01002v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01003v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Surgical-1: real-time surgical phase recognition that runs on theatre hardware</title>
+  <summary>Surgical phase recognition has been limited to offline analysis because existing models need cluster inference. Surgical-1 runs in real-time at 30 frames per second on a single workstation GPU and raises phase accuracy from 78.1 to 89.4 on Cholec80. The system has been deployed in two hospitals for six months. We release weights and an inference server at https://github.com/surgical1/deploy.</summary>
+  <author><name>Marta Silva</name></author>
+  <author><name>Kenji Watanabe</name></author>
+  <author><name>Olu Adeyemi</name></author>
+  <author><name>Rebecca Hall</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">Accepted at MICCAI 2026</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01003v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01003v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01004v2</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Scaling multilingual speech recognition to 1,400 languages with 40 hours of audio each</title>
+  <summary>We train a speech recogniser covering 1,400 languages, most of which had no working system before, using only 40 hours of untranscribed audio per language. Word error rate on the 900 lowest-resource languages falls from 61.2 to 33.8. Training used 512 A100 GPUs for three weeks.</summary>
+  <author><name>Sofia Marino</name></author>
+  <author><name>Dmitri Volkov</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">Model weights released</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01004v2" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01004v2" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="eess.AS" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01005v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Prompt ordering effects in retrieval augmented generation</title>
+  <summary>We measure how document ordering affects answer quality in retrieval augmented generation across four benchmarks. Accuracy varies by up to 4.1 points depending on order alone. We suggest a simple reordering heuristic that recovers 2.2 points.</summary>
+  <author><name>James Okonkwo</name></author>
+  <author><name>Lucy Brant</name></author>
+
+  <link href="http://arxiv.org/abs/2608.01005v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01005v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01006v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Training-free watermark removal reveals a gap in provenance tooling</title>
+  <summary>We show that current image watermarking schemes can be removed without retraining and without access to the watermark key, using a diffusion purification step that costs 0.4 seconds per image on consumer hardware. Detection rates drop from 98% to 6%. We discuss what this means for provenance claims and release our evaluation suite.</summary>
+  <author><name>Nils Berg</name></author>
+  <author><name>Ruth Amara</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">Code: https://github.com/provenance-gap/eval</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01006v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01006v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CR" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01007v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Contract review agents that cite their sources, evaluated with 40 in-house lawyers</title>
+  <summary>Legal teams cannot use language model review without traceable citations. We build an end-to-end system that grounds each clause finding in the source contract and a policy library, then evaluate it with 40 in-house lawyers across 1,200 contracts. Reviewer time per contract falls from 51 to 12 minutes, and unsupported findings fall by 87%. The system runs on a single node.</summary>
+  <author><name>Claire Dubois</name></author>
+  <author><name>Hassan Malik</name></author>
+  <author><name>Ingrid Lund</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">Industry track</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01007v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01007v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01008v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>On the geometry of representation collapse in deep networks</title>
+  <summary>We characterise conditions under which learned representations collapse to a low-dimensional subspace, and relate the collapse rate to the spectrum of the data covariance. Our analysis explains observations reported in prior work.</summary>
+  <author><name>Yusuf Demir</name></author>
+
+  <link href="http://arxiv.org/abs/2608.01008v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01008v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01009v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>RoboFold-2: dexterous cloth folding from 20 demonstrations</title>
+  <summary>Cloth manipulation has needed thousands of demonstrations. RoboFold-2 learns reliable folding from 20 demonstrations by combining a tactile prior with a video model, reaching a 91% success rate against 47% for the previous best. Training fits on 8 A100 GPUs. Hardware plans and code are available at https://github.com/robofold/robofold2.</summary>
+  <author><name>Elena Petrova</name></author>
+  <author><name>Sam Idris</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">Videos at project page</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01009v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01009v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01010v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>A benchmark for evaluating agent tool use across 60 enterprise APIs</title>
+  <summary>We introduce a benchmark of 3,400 tasks across 60 enterprise APIs with executable checks. Current agents solve 34% of tasks. The benchmark and harness are released at https://github.com/toolbench/enterprise.</summary>
+  <author><name>Ravi Menon</name></author>
+  <author><name>Anna Weiss</name></author>
+  <author><name>Peter Shaw</name></author>
+  <arxiv:comment xmlns:arxiv="http://arxiv.org/schemas/atom">Dataset paper</arxiv:comment>
+  <link href="http://arxiv.org/abs/2608.01010v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01010v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01011v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Distilling protein structure prediction to a model that runs on a laptop</title>
+  <summary>Structure prediction has required cluster inference. We distil a frontier structure model into 340M parameters that runs on a laptop CPU in 40 seconds per chain, with TM-score falling only from 0.89 to 0.86. This opens screening workflows to labs without GPU access. Weights are available at https://huggingface.co/foldlite/foldlite-340m.</summary>
+  <author><name>Grace Yoon</name></author>
+  <author><name>Miguel Torres</name></author>
+
+  <link href="http://arxiv.org/abs/2608.01011v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01011v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="q-bio.BM" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="q-bio.BM" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+<entry>
+  <id>http://arxiv.org/abs/2608.01012v1</id>
+  <updated>2026-08-20T18:12:03Z</updated>
+  <published>2026-08-20T17:55:41Z</published>
+  <title>Improved sampling for discrete diffusion models</title>
+  <summary>We propose a corrector step for discrete diffusion samplers that improves perplexity by 0.8 points on text8 and 1.2 points on OpenWebText at equal compute.</summary>
+  <author><name>Laura Ricci</name></author>
+  <author><name>Ben Osei</name></author>
+
+  <link href="http://arxiv.org/abs/2608.01012v1" rel="alternate" type="text/html"/>
+  <link title="pdf" href="http://arxiv.org/pdf/2608.01012v1" rel="related" type="application/pdf"/>
+  <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+</entry>
+</feed>

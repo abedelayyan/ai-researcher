@@ -1,0 +1,68 @@
+name: daily
+
+# arXiv announces new submissions at roughly 20:00 ET, which is 00:00 UTC in summer.
+# This runs about an hour later, offset away from the top of the hour because scheduled
+# workflows bunch there and get delayed. A late or missed run is fine: the pipeline
+# widens its lookback window to cover whatever it missed.
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Run date (YYYY-MM-DD), defaults to today"
+        required: false
+      lookback_hours:
+        description: "Override the ingest window"
+        required: false
+      limit:
+        description: "Cap papers scored, for a quick test run"
+        required: false
+
+permissions:
+  contents: write
+  models: read          # free GitHub Models inference for the cheap tier
+
+concurrency:
+  group: signal-zero-daily
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore API response cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: signal-zero-http-${{ github.run_id }}
+          restore-keys: signal-zero-http-
+
+      - name: Run the daily pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+        run: |
+          python -m src.cli daily \
+            ${{ inputs.date && format('--date {0}', inputs.date) || '' }} \
+            ${{ inputs.lookback_hours && format('--lookback-hours {0}', inputs.lookback_hours) || '' }} \
+            ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+
+      - name: Commit the digest, the database and the spend log
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "digest: ${{ inputs.date || 'daily run' }}"
+          file_pattern: data/signal.db data/digest/*.md data/costs/*.jsonl site/**

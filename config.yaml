@@ -1,0 +1,138 @@
+# Signal Zero configuration.
+# Everything tunable lives here. Prompts live in prompts/, never inline in Python.
+
+project:
+  name: signal-zero
+  # Sent as the User-Agent on every outbound request, per section 12 of the spec.
+  contact: "signal-zero (https://github.com/abedelayyan/ai-researcher; mailto:kareemela@hotmail.com)"
+
+ingest:
+  categories: [cs.AI, cs.LG, cs.CL, cs.CV, stat.ML]
+  # Normal lookback in hours for a daily run.
+  lookback_hours: 30
+  # If the previous run was missed, widen the window up to this many hours.
+  max_lookback_hours: 168
+  # arXiv asks for one request per three seconds on a single connection.
+  request_interval_seconds: 3.0
+  max_results_per_page: 200
+  max_pages_per_category: 8
+  retry:
+    attempts: 5
+    backoff_seconds: 4.0
+    backoff_multiplier: 2.0
+  lab_blogs:
+    - name: DeepMind
+      url: https://deepmind.google/blog/rss.xml
+    - name: OpenAI
+      url: https://openai.com/news/rss.xml
+    - name: Anthropic
+      url: https://www.anthropic.com/news/rss.xml
+    - name: Meta AI
+      url: https://ai.meta.com/blog/rss/
+
+author_prior:
+  # OpenAlex is the source. Priors are cached per author and refreshed monthly.
+  refresh_days: 30
+  # How many recent works per author to look at when computing the prior.
+  works_per_author: 50
+  # Only consider works from this many years before the cutoff date.
+  lookback_years: 6
+  # Cap the authors we query per paper. First and last author carry most of the signal.
+  max_authors_per_paper: 6
+  # Citations per year above which an author counts as established.
+  # Used to normalise the prior into 0..1.
+  saturation_citations_per_year: 40.0
+  # Below this many indexed works an author is treated as unknown (null prior).
+  min_works_for_coverage: 3
+
+capability_delta:
+  prompt: prompts/capability_delta.md
+  prompt_version: v1
+  # Four axes, each 0..3, each with a one-line justification.
+  axes: [cost_curve, constraint_removal, usability_threshold, modality_opening]
+  max_per_axis: 3
+
+score:
+  scorer_version: v1
+  # Weights on the normalised (0..1) components of the day-zero score.
+  # Nothing here may be derived from a post-publication signal.
+  weights:
+    capability_delta: 0.40
+    benchmark_jump: 0.20
+    compute_band: 0.15
+    code_link: 0.10
+    structural: 0.05
+    author_prior: 0.10
+  # Compute band to reproducibility score. Frontier-only work is a lab result.
+  compute_band_scores:
+    consumer: 1.00
+    single_node: 0.80
+    small_cluster: 0.45
+    frontier: 0.05
+    unknown: 0.40
+  # A claimed jump at or above this many points saturates the benchmark component.
+  benchmark_saturation_points: 20.0
+  benchmark_saturation_multiple: 5.0
+  buckets:
+    confidence:
+      size: 8
+      # Papers with a known author prior compete here.
+      min_prior_coverage: true
+    high_variance:
+      size: 6
+      # Null or low prior, but a large claim. Ranked on claim size alone.
+      max_author_prior: 0.35
+      min_claim_score: 0.45
+  # Shortlisted papers get a plain-language summary. The rest do not.
+  summarise_shortlist_only: true
+
+outcomes:
+  horizons_days: [7, 30, 90]
+  # A run collects any paper whose horizon is due within this tolerance.
+  due_window_days: 3
+  composite:
+    # Horizon at which the composite label is derived.
+    horizon_days: 30
+    # Normalisation ceilings. Anything at or above counts as full marks.
+    hf_upvotes_ceiling: 60.0
+    github_stars_ceiling: 500.0
+    citations_ceiling: 10.0
+    hn_points_ceiling: 100.0
+    weights:
+      hf_upvotes: 0.25
+      github_stars: 0.35
+      citations: 0.25
+      hn_points: 0.15
+    # A paper counts as a hit above this composite value.
+    hit_threshold: 0.30
+
+llm:
+  # Cheap tier: feature extraction and summaries, 30 to 50 papers a day.
+  # Strong tier: cluster synthesis and the critic, weekly (Phase 2).
+  tiers:
+    cheap:
+      provider: github_models
+      model: openai/gpt-4o-mini
+      max_output_tokens: 900
+      temperature: 0.0
+    strong:
+      provider: anthropic
+      model: claude-sonnet-5
+      max_output_tokens: 4000
+      temperature: 0.3
+  # Providers in preference order. The first one with credentials present wins.
+  # "heuristic" needs no credentials and no network; it keeps the pipeline
+  # runnable offline and in tests.
+  fallback_order: [github_models, anthropic, openai, heuristic]
+  request_timeout_seconds: 90
+  max_retries: 4
+  # Token spend is appended to this file, one JSON object per call.
+  spend_log: data/costs/spend.jsonl
+
+render:
+  digest_dir: data/digest
+  site_dir: site
+  timezone: Europe/London
+
+storage:
+  db_path: data/signal.db
