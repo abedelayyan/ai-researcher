@@ -166,9 +166,14 @@ def finish_run(
 
 
 def last_successful_run(conn: sqlite3.Connection, kind: str) -> sqlite3.Row | None:
+    """The last run that finished clean.
+
+    A partial run does not count. The next run's lookback starts from the last clean
+    one, so a truncated arXiv fetch is re-read rather than skipped over. Ingest is
+    idempotent, so covering the same window twice costs nothing.
+    """
     cur = conn.execute(
-        "SELECT * FROM runs WHERE kind = ? AND status IN ('ok', 'partial')"
-        " ORDER BY started_at DESC LIMIT 1",
+        "SELECT * FROM runs WHERE kind = ? AND status = 'ok' ORDER BY started_at DESC LIMIT 1",
         (kind,),
     )
     return cur.fetchone()

@@ -86,7 +86,7 @@ def cmd_render(args: argparse.Namespace) -> int:
         config=config, calibration=calib.summarise(conn),
         lab_posts=render_digest.lab_posts_for(conn, date), spend={}, run_id="rerender",
     )
-    paths = render_digest.write(context, config, recent_dates=render_digest.recent_digest_dates(config))
+    paths = render_digest.write(context, config)
     print(paths["markdown"])
     db.close(scoped)
     db.close(conn)

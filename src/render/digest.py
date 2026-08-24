@@ -168,7 +168,12 @@ def render_html(
     )
 
 
-def write(context: dict, config: dict | None = None, *, recent_dates: Sequence[str] = ()) -> dict[str, Path]:
+def write(
+    context: dict,
+    config: dict | None = None,
+    *,
+    recent_dates: Sequence[str] | None = None,
+) -> dict[str, Path]:
     """Write the markdown digest and refresh the static site."""
     config = config or load_config()
     render_cfg = config.get("render", {})
@@ -179,6 +184,10 @@ def write(context: dict, config: dict | None = None, *, recent_dates: Sequence[s
 
     md_path = digest_dir / f"{context['date']}.md"
     md_path.write_text(render_markdown(context), encoding="utf-8")
+
+    # Read the archive after writing today's file, so today appears in its own nav.
+    if recent_dates is None:
+        recent_dates = recent_digest_dates(config)
 
     page_path = site_dir / "digest" / f"{context['date']}.html"
     page_path.write_text(render_html(context, recent_dates), encoding="utf-8")

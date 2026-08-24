@@ -95,6 +95,9 @@ class ArxivClient:
         self.categories: list[str] = list(ingest.get("categories", []))
         self.page_size: int = int(ingest.get("max_results_per_page", 200))
         self.max_pages: int = int(ingest.get("max_pages_per_category", 8))
+        #: Windows this client failed to read in full. A run with any of these is
+        #: partial, so the next run covers the same window again rather than moving on.
+        self.errors: list[str] = []
 
     def fetch_window(self, start: datetime, end: datetime) -> list[Paper]:
         """All papers in the five categories submitted between two moments.
@@ -125,6 +128,7 @@ class ArxivClient:
                 body = self.fetcher.get_text(API_URL, params, use_cache=False)
             except SourceError as exc:
                 LOG.error("arXiv page %d failed, keeping what we have: %s", page, exc)
+                self.errors.append(f"{start.isoformat()} page {page}: {exc}")
                 return
             papers = parse_atom(body)
             if not papers:

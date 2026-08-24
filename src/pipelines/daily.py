@@ -78,8 +78,9 @@ def run(
 
     try:
         papers: list[Paper] = []
+        ingest_errors: list[str] = []
         if not skip_ingest:
-            papers = _ingest(fetcher, config, start, end)
+            papers, ingest_errors = _ingest(fetcher, config, start, end)
             if limit:
                 papers = papers[:limit]
             ingested = save_papers(conn, papers)
@@ -115,18 +116,21 @@ def run(
             spend=client.spend_summary(),
             run_id=run_id,
         )
-        paths = render_digest.write(
-            context, config, recent_dates=render_digest.recent_digest_dates(config)
-        )
+        paths = render_digest.write(context, config)
 
-        if not window_ids:
+        if ingest_errors or not window_ids:
             status = "partial"
         db.record_llm_calls(conn, run_id, client.call_rows())
         spend = client.spend_summary()
-        db.finish_run(conn, run_id, status, {
-            "ingested": ingested, "extracted": extracted,
-            "scored": len(window_ids), "shortlisted": len(shortlist), "spend": spend,
-        })
+        db.finish_run(
+            conn, run_id, status,
+            {
+                "ingested": ingested, "extracted": extracted, "scored": len(window_ids),
+                "shortlisted": len(shortlist), "spend": spend,
+                "ingest_errors": ingest_errors,
+            },
+            notes="; ".join(ingest_errors)[:500] or None,
+        )
         return DailyResult(
             run_id=run_id, run_date=run_date, ingested=ingested, extracted=extracted,
             scored=len(window_ids), shortlisted=len(shortlist), paths=paths, spend=spend,
@@ -139,14 +143,19 @@ def run(
         db.close(conn)
 
 
-def _ingest(fetcher: Fetcher, config: dict, start, end) -> list[Paper]:
-    """arXiv API first, category RSS if it returns nothing."""
+def _ingest(fetcher: Fetcher, config: dict, start, end) -> tuple[list[Paper], list[str]]:
+    """arXiv API first, category RSS if it returns nothing.
+
+    Returns the papers and any window the API could not read in full, which the caller
+    turns into a partial run status.
+    """
     client = ArxivClient(fetcher, config)
     papers = client.fetch_window(start, end)
     if papers:
-        return papers
+        return papers, client.errors
     LOG.warning("arXiv API returned nothing, falling back to category RSS")
-    return rss.fetch_categories(fetcher, config.get("ingest", {}).get("categories", []))
+    fallback = rss.fetch_categories(fetcher, config.get("ingest", {}).get("categories", []))
+    return fallback, client.errors + ([] if fallback else ["arXiv and RSS both empty"])
 
 
 def _papers_by_id(conn, arxiv_ids: Sequence[str]) -> list:

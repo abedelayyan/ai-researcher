@@ -20,7 +20,7 @@ from src.util.config import db_path
 @pytest.fixture
 def offline_run(monkeypatch, config, sample_atom):
     papers = parse_atom(sample_atom)
-    monkeypatch.setattr(daily, "_ingest", lambda fetcher, cfg, start, end: papers)
+    monkeypatch.setattr(daily, "_ingest", lambda fetcher, cfg, start, end: (papers, []))
 
     # Two authors have a record, everyone else is unknown.
     conn = db.connect(db_path(config))
@@ -98,6 +98,23 @@ class TestDailyRun:
         logged = conn.execute("SELECT count(*) FROM paper_scores").fetchone()[0]
         conn.close()
         assert logged == 12
+
+    def test_a_truncated_ingest_does_not_move_the_window_on(self, monkeypatch, config, sample_atom):
+        """A partial run is re-covered by the next one rather than skipped over."""
+        from src.ingest.arxiv import parse_atom
+
+        papers = parse_atom(sample_atom)
+        monkeypatch.setattr(
+            daily, "_ingest", lambda fetcher, cfg, start, end: (papers, ["page 2: 429"])
+        )
+        daily.run(config=config, run_date="2026-08-21", offline=True)
+        conn = db.connect(db_path(config))
+        row = conn.execute("SELECT * FROM runs ORDER BY run_id DESC LIMIT 1").fetchone()
+        clean = db.last_successful_run(conn, "daily")
+        db.close(conn)
+        assert row["status"] == "partial"
+        assert "429" in (row["notes"] or "")
+        assert clean is None
 
     def test_the_run_is_recorded(self, offline_run, config):
         conn = db.connect(db_path(config))
