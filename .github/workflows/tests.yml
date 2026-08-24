@@ -17,6 +17,8 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check .
       # test_no_leakage.py is the one that must never go red. If a day-zero module
       # gains access to outcome data, everything downstream stops meaning anything.
       - run: python -m pytest -q

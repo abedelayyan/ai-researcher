@@ -10,8 +10,8 @@ sized windows because pagination through `start` breaks on large result sets.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta
-from typing import Iterable, Sequence
 
 import feedparser
 

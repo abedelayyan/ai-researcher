@@ -5,7 +5,8 @@ from __future__ import annotations
 import os
 
 from ..util import logging as log
-from ..util.config import contact_email, load as load_config
+from ..util.config import contact_email
+from ..util.config import load as load_config
 from ..util.http import Fetcher, SourceError
 
 LOG = log.get("outcomes.citations")

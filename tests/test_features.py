@@ -45,6 +45,45 @@ class TestBenchmarkClaims:
         assert not claims.has_numbers
         assert claims.note == "no numeric claim in the abstract"
 
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "We train on 8 A100 GPUs over 3 weeks.",
+            "We evaluate 12 models against 4 baselines.",
+            "The study covers 60 APIs versus 12 in prior benchmarks.",
+            "We survey 40 papers published over 5 years.",
+            "We train from 3 to 8 epochs.",
+            "Data spans from 2019 to 2024.",
+        ],
+    )
+    def test_ordinary_counts_are_not_read_as_a_jump(self, text):
+        """Two counts in one sentence are not a benchmark result.
+
+        Without the guard, "60 APIs versus 12" scores as a 48 point gain and pushes a
+        dataset paper straight into the shortlist.
+        """
+        claims = structural.parse_benchmark_claims(text)
+        assert claims.max_point_gain is None
+
+    @pytest.mark.parametrize(
+        "text,points",
+        [
+            ("Accuracy reaches 91.2% versus 84.5% for the previous best.", 6.7),
+            ("reaching a 91% success rate against 47% for the previous best", 44.0),
+            ("accuracy improves from 45.2 to 61.8 on MMLU", 16.6),
+        ],
+    )
+    def test_real_comparisons_still_parse(self, text, points):
+        assert structural.parse_benchmark_claims(text).max_point_gain == pytest.approx(points)
+
+    def test_a_rate_needs_rate_words_to_count(self):
+        with_units = structural.parse_benchmark_claims(
+            "improves throughput from 340 to 1180 tokens per second"
+        )
+        bare = structural.parse_benchmark_claims("the corpus grew from 340 to 1180")
+        assert with_units.max_relative_gain == pytest.approx(3.471)
+        assert bare.max_relative_gain is None
+
     def test_small_and_large_gains_are_different_species(self):
         small = structural.parse_benchmark_claims("improves by 0.4 points")
         large = structural.parse_benchmark_claims("improves by 30 points")
@@ -122,3 +161,44 @@ class TestCapability:
     def test_a_paper_that_moves_nothing_scores_zero(self):
         score = heuristic_scores("We prove a tighter convergence bound.")
         assert score.total == 0
+
+
+class TestModelBudget:
+    """A heavy arXiv day must not exhaust the free tier or run up a bill."""
+
+    def test_triage_puts_the_strongest_structural_signals_first(self):
+        from src.features.capability import triage
+
+        papers = [{"arxiv_id": "thin"}, {"arxiv_id": "strong"}, {"arxiv_id": "middling"}]
+        rows = {
+            "thin": {},
+            "strong": {"code_url": "https://github.com/a/b", "claims_numbers": 1,
+                       "claims_system": 1, "max_point_gain": 20.0},
+            "middling": {"claims_numbers": 1, "max_relative_gain": 3.0},
+        }
+        assert [p["arxiv_id"] for p in triage(papers, rows)] == ["strong", "middling", "thin"]
+
+    def test_the_client_stops_at_the_call_budget(self):
+        from src.llm.client import Client, HeuristicProvider
+
+        client = Client(config={"llm": {"max_calls_per_run": 2, "fallback_order": [],
+                                        "tiers": {"cheap": {}}}})
+        recorded = []
+
+        class Counting(HeuristicProvider):
+            name = "fake"
+
+            def available(self) -> bool:
+                return True
+
+            def complete(self, system, user, *, model, max_tokens, temperature, purpose):
+                from src.llm.client import LLMResult
+
+                recorded.append(purpose)
+                return LLMResult(text="{}", provider="fake", model="m", purpose=purpose)
+
+        client.providers = [Counting()]
+        results = [client.complete("test", "s", "u") for _ in range(4)]
+        assert len(recorded) == 2
+        assert [r.ok for r in results] == [True, True, False, False]
+        assert "budget" in (results[-1].error or "")

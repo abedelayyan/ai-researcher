@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..store import db
 from ..util import logging as log

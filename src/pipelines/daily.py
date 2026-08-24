@@ -7,8 +7,8 @@ than by anyone noticing.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from ..features.extract import extract_day
 from ..ingest import lab_blogs, rss
@@ -23,7 +23,8 @@ from ..score import rank
 from ..store import db
 from ..util import dates
 from ..util import logging as log
-from ..util.config import db_path, load as load_config
+from ..util.config import db_path
+from ..util.config import load as load_config
 from ..util.http import Fetcher
 
 LOG = log.get("pipeline.daily")
@@ -88,17 +89,15 @@ def run(
             ingested = {"seen": 0, "new": 0}
 
         window_ids = _window_paper_ids(conn, papers, start, end)
-        rows = [
-            conn.execute("SELECT * FROM papers WHERE arxiv_id = ?", (pid,)).fetchone()
-            for pid in window_ids
-        ]
-        rows = [row for row in rows if row is not None]
+        rows = _papers_by_id(conn, window_ids)
 
         # Day-zero work runs on a connection that cannot reach the outcome tables.
         scoped = db.open_feature_scoped(path)
-        extracted = extract_day(scoped, rows, client=client, fetcher=fetcher, config=config)
-        buckets = rank.rank_ids(scoped, window_ids, run_date, config)
-        db.close(scoped)
+        try:
+            extracted = extract_day(scoped, rows, client=client, fetcher=fetcher, config=config)
+            buckets = rank.rank_ids(scoped, window_ids, run_date, config)
+        finally:
+            db.close(scoped)
 
         shortlist = buckets["confidence"] + buckets["high_variance"]
         summaries = summarise(client, [p.row for p in shortlist])
@@ -148,6 +147,15 @@ def _ingest(fetcher: Fetcher, config: dict, start, end) -> list[Paper]:
         return papers
     LOG.warning("arXiv API returned nothing, falling back to category RSS")
     return rss.fetch_categories(fetcher, config.get("ingest", {}).get("categories", []))
+
+
+def _papers_by_id(conn, arxiv_ids: Sequence[str]) -> list:
+    if not arxiv_ids:
+        return []
+    placeholders = ", ".join("?" for _ in arxiv_ids)
+    return conn.execute(
+        f"SELECT * FROM papers WHERE arxiv_id IN ({placeholders})", list(arxiv_ids)
+    ).fetchall()
 
 
 def _window_paper_ids(conn, papers: Sequence[Paper], start, end) -> list[str]:

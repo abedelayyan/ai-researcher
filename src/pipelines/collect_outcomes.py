@@ -10,7 +10,8 @@ from ..outcomes import calibration, collect
 from ..store import db
 from ..util import dates
 from ..util import logging as log
-from ..util.config import db_path, load as load_config
+from ..util.config import db_path
+from ..util.config import load as load_config
 from ..util.http import Fetcher
 
 LOG = log.get("pipeline.outcomes")

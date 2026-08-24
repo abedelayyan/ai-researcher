@@ -6,7 +6,7 @@ be read quickly, which is why the whole corpus is never summarised.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..llm import prompts as prompt_lib
 from ..llm.client import Client
@@ -46,7 +46,7 @@ def summarise(client: Client, papers: Sequence[dict], *, concurrency: int = 2) -
     ]
     results = client.complete_many(PURPOSE, requests, tier="cheap", concurrency=concurrency)
     out: dict[str, str] = {}
-    for paper, result in zip(papers, results):
+    for paper, result in zip(papers, results, strict=True):
         text = (result.text or "").strip()
         if not result.ok or not text:
             text = _fallback(f"Abstract: {paper.get('abstract', '')}")

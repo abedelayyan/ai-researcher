@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass
-from typing import Sequence
 
 from ..store import db
 from ..util import dates

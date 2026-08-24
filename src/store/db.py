@@ -13,9 +13,10 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from collections.abc import Iterable, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
@@ -28,7 +29,7 @@ class LeakageError(sqlite3.DatabaseError):
 
 
 def _utcnow() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def connect(db_path: str | Path, *, read_only: bool = False) -> sqlite3.Connection:

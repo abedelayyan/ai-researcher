@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import pytest
-
 from src.score import rank
-
 
 WEIGHTS = {
     "capability_delta": 0.40, "benchmark_jump": 0.20, "compute_band": 0.15,

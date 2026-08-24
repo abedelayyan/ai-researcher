@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..llm.client import Client
 from ..store import db
@@ -17,7 +17,7 @@ from ..util import logging as log
 from ..util.http import Fetcher
 from . import structural
 from .author_prior import AuthorPriorService
-from .capability import CapabilityScore, score_papers
+from .capability import CapabilityScore, heuristic_scores, score_papers, triage
 
 LOG = log.get("features.extract")
 
@@ -102,13 +102,26 @@ def extract_day(
 
     LOG.info("extracting features for %d papers", len(todo))
     priors = AuthorPriorService(conn, fetcher, config)
-    concurrency = 2
-    capability = score_papers(client, todo, config, concurrency=concurrency)
+
+    # Structural features are free, so they come first and decide who gets a model call.
+    structural_rows = {paper["arxiv_id"]: structural_features(conn, paper) for paper in todo}
+    cap = int(config.get("capability_delta", {}).get("max_model_papers", 0) or 0)
+    ordered = triage(todo, structural_rows)
+    for_model = ordered[:cap] if cap and len(ordered) > cap else ordered
+    if len(for_model) < len(todo):
+        LOG.info("model budget covers %d of %d papers, the rest fall back to rules",
+                 len(for_model), len(todo))
+    capability = score_papers(client, for_model, config, concurrency=2)
+    for paper in todo:
+        if paper["arxiv_id"] not in capability:
+            capability[paper["arxiv_id"]] = heuristic_scores(
+                f"{paper.get('title', '')} {paper.get('abstract', '')}"
+            )
 
     written = 0
     for paper in todo:
         row: dict[str, object] = {"arxiv_id": paper["arxiv_id"]}
-        row.update(structural_features(conn, paper))
+        row.update(structural_rows[paper["arxiv_id"]])
 
         prior = priors.for_paper(paper.get("authors", []), cutoff_date)
         row["author_prior"] = prior.prior

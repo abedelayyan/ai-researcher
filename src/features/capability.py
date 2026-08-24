@@ -12,8 +12,8 @@ source produced it so a run scored by rules can be told apart later.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Sequence
 
 from ..llm import prompts as prompt_lib
 from ..llm.client import Client, LLMResult, extract_json
@@ -139,6 +139,30 @@ def build_request(paper: dict, prompt: prompt_lib.Prompt) -> tuple[str, str]:
     )
 
 
+def triage(papers: Sequence[dict], structural_rows: dict[str, dict]) -> list[dict]:
+    """Order papers for the cheap model when there is not enough budget for all of them.
+
+    Uses day-zero structural signals only, and it is a triage rather than a ranking:
+    the ordering decides who gets a model call, and the final score still comes from
+    the full feature set. Papers that miss out are scored by rules and marked as such.
+    """
+    def weight(paper: dict) -> float:
+        row = structural_rows.get(paper["arxiv_id"], {})
+        points = row.get("max_point_gain") or 0.0
+        multiple = row.get("max_relative_gain") or 0.0
+        return (
+            2.0 * bool(row.get("code_url"))
+            + 1.0 * bool(row.get("claims_numbers"))
+            + 1.0 * bool(row.get("claims_system"))
+            + 0.5 * bool(row.get("cross_listed"))
+            + 0.5 * bool(row.get("application_domain"))
+            + min(2.0, points / 10.0)
+            + min(2.0, max(0.0, multiple - 1.0) / 2.0)
+        )
+
+    return sorted(papers, key=weight, reverse=True)
+
+
 def score_papers(
     client: Client,
     papers: Sequence[dict],
@@ -160,7 +184,7 @@ def score_papers(
     )
 
     out: dict[str, CapabilityScore] = {}
-    for paper, result in zip(papers, results):
+    for paper, result in zip(papers, results, strict=True):
         arxiv_id = paper["arxiv_id"]
         if not result.ok or not result.text:
             LOG.warning("no capability score for %s (%s), falling back to rules", arxiv_id, result.error)

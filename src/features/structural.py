@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 from ..util.text import candidate_terms
 
@@ -88,6 +88,56 @@ _REDUCTION_RE = re.compile(
 )
 
 
+#: Words that mark a number as a metric value rather than a count of something.
+_METRIC_WORDS = (
+    "accuracy", "score", "f1", "bleu", "rouge", "wer", "cer", "map", "auc", "precision",
+    "recall", "exact match", "success rate", "win rate", "pass@", "perplexity",
+    "error rate", "iou", "psnr", "ssim", "dice", "mrr", "ndcg", "hit rate", "top-1",
+    "top-5", "points", "percent", "detection rate", "solve rate", "coverage",
+)
+
+#: Rates, where a jump from 340 to 1180 is a real claim rather than two unrelated counts.
+_RATE_WORDS = (
+    "per second", "per minute", "per hour", "per day", "throughput", "fps",
+    "frames per", "queries per", "tokens per", "samples per", "requests per",
+    "images per", "latency", "runtime", "wall clock", "seconds", "minutes", "ms",
+)
+
+#: Nouns that make a number a count. "60 APIs versus 12" is not a benchmark jump.
+_COUNT_NOUNS = (
+    "gpu", "week", "year", "day", "hour", "paper", "model", "baseline", "api",
+    "language", "dataset", "task", "seed", "epoch", "layer", "author", "participant",
+    "annotator", "benchmark", "example", "token", "parameter", "step", "domain",
+    "category", "expert", "human", "subject", "sample", "demonstration", "trial",
+)
+
+
+def _window(text: str, start: int, end: int, before: int = 80, after: int = 45) -> str:
+    return text[max(0, start - before) : min(len(text), end + after)].lower()
+
+
+def _has(words: tuple[str, ...], haystack: str) -> bool:
+    return any(word in haystack for word in words)
+
+
+def _is_metric_pair(text: str, match: re.Match[str], before: float, after: float) -> bool:
+    """Guard against reading two ordinary counts as a benchmark jump.
+
+    Without this, "the study covers 60 APIs versus 12 in prior benchmarks" scores as a
+    48 point gain and inflates the paper straight into the shortlist.
+    """
+    matched = match.group(0).lower()
+    if "%" in matched:
+        return True
+    if _has(_COUNT_NOUNS, matched):
+        return False
+    context = _window(text, match.start(), match.end())
+    if _has(_METRIC_WORDS, context):
+        return True
+    # Two decimals in a row read as scores. Two round integers usually do not.
+    return before != int(before) and after != int(after)
+
+
 @dataclass
 class BenchmarkClaims:
     claims: list[dict] = field(default_factory=list)
@@ -115,9 +165,10 @@ def parse_benchmark_claims(text: str) -> BenchmarkClaims:
             # Percentage-scale numbers give a points gain. Anything larger is a rate,
             # so "from 340 to 1180 tokens per second" is 3.5x rather than 840 points.
             if after <= 100:
-                claims.append({"kind": "from_to", "before": before, "after": after,
-                               "points": round(after - before, 3), "text": match.group(0)})
-            else:
+                if _is_metric_pair(text, match, before, after):
+                    claims.append({"kind": "from_to", "before": before, "after": after,
+                                   "points": round(after - before, 3), "text": match.group(0)})
+            elif _has(_RATE_WORDS, _window(text, match.start(), match.end())):
                 claims.append({"kind": "rate_gain", "before": before, "after": after,
                                "multiple": round(after / before, 3) if before else None,
                                "text": match.group(0)})
@@ -128,7 +179,7 @@ def parse_benchmark_claims(text: str) -> BenchmarkClaims:
 
     for match in _VS_PREVIOUS_RE.finditer(text):
         ours, theirs = float(match.group(1)), float(match.group(2))
-        if ours > theirs and ours <= 100 and theirs >= 0:
+        if ours > theirs and ours <= 100 and theirs >= 0 and _is_metric_pair(text, match, theirs, ours):
             claims.append({"kind": "vs_previous", "before": theirs, "after": ours,
                            "points": round(ours - theirs, 3), "text": match.group(0)})
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 ARXIV_ID_RE = re.compile(r"(\d{4}\.\d{4,5})(?:v(\d+))?")
@@ -61,5 +61,5 @@ class Paper:
             "pdf_url": self.pdf_url,
             "links": json.dumps(self.links),
             "source": self.source,
-            "ingested_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "ingested_at": datetime.now(UTC).isoformat(timespec="seconds"),
         }

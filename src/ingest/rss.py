@@ -6,7 +6,7 @@ the API, so it is a fallback rather than the primary path.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import feedparser
 

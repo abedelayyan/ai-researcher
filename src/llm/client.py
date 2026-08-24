@@ -19,16 +19,17 @@ import json
 import os
 import re
 import threading
+from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Sequence
 
 import httpx
 
 from ..util import dates
 from ..util import logging as log
-from ..util.config import REPO_ROOT, load as load_config
+from ..util.config import REPO_ROOT
+from ..util.config import load as load_config
 
 LOG = log.get("llm")
 
@@ -264,6 +265,9 @@ class Client:
     # -- single call ------------------------------------------------------------
 
     def complete(self, purpose: str, system: str, user: str, *, tier: str = "cheap") -> LLMResult:
+        exhausted = self._budget_exhausted()
+        if exhausted is not None:
+            return exhausted
         tier_cfg = (self.config.get("llm", {}).get("tiers", {}) or {}).get(tier, {})
         preferred = tier_cfg.get("provider")
         max_tokens = int(tier_cfg.get("max_output_tokens", 900))
@@ -296,6 +300,19 @@ class Client:
         )
         self._record(failure)
         return failure
+
+    def _budget_exhausted(self) -> LLMResult | None:
+        """Stop once the per-run cap is reached, rather than discovering it on the bill."""
+        cap = int(self.config.get("llm", {}).get("max_calls_per_run", 0) or 0)
+        if not cap:
+            return None
+        with self._lock:
+            spent = sum(1 for call in self.calls if call.provider not in ("none", "heuristic"))
+        if spent < cap:
+            return None
+        LOG.warning("model call budget of %d reached, falling back to rules", cap)
+        return LLMResult(text="", provider="none", model="", ok=False,
+                         error=f"call budget of {cap} reached")
 
     # -- batched calls ----------------------------------------------------------
 

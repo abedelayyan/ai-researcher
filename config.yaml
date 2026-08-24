@@ -51,6 +51,11 @@ capability_delta:
   # Four axes, each 0..3, each with a one-line justification.
   axes: [cost_curve, constraint_removal, usability_threshold, modality_opening]
   max_per_axis: 3
+  # Cheap-model calls per run. The free GitHub Models tier allows roughly 50 requests a
+  # day, and shortlist summaries need some of that. On a heavy day the papers beyond
+  # this cap are scored by rules instead, ordered by a structural triage that uses only
+  # day-zero information. Every row records which path scored it.
+  max_model_papers: 40
 
 score:
   scorer_version: v1
@@ -126,6 +131,9 @@ llm:
   fallback_order: [github_models, anthropic, openai, heuristic]
   request_timeout_seconds: 90
   max_retries: 4
+  # Hard stop on calls per run, so a loop or a heavy day cannot run up a bill. Calls
+  # past the stop return a failure and the caller falls back to rules.
+  max_calls_per_run: 80
   # Token spend is appended to this file, one JSON object per call.
   spend_log: data/costs/spend.jsonl
 

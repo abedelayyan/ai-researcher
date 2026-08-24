@@ -10,8 +10,9 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import httpx
 
@@ -159,7 +160,7 @@ class Fetcher:
     def close(self) -> None:
         self._client.close()
 
-    def __enter__(self) -> "Fetcher":
+    def __enter__(self) -> Fetcher:
         return self
 
     def __exit__(self, *exc_info: object) -> None:

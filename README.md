@@ -83,6 +83,7 @@ python -m src.cli calibration      # precision at k over the prediction log so f
 python -m src.cli render --date 2026-08-21   # re-render a digest from stored data
 python -m src.cli spend            # model spend per day
 pytest                             # the leakage test is the one that must never go red
+ruff check .                       # lint, same command CI runs
 ```
 
 Useful flags on `daily`: `--date`, `--lookback-hours`, `--limit` for a quick run, and
@@ -108,6 +109,14 @@ credentials wins:
 - `heuristic` needs no key and no network. It scores with keyword rules, marks the run as
   degraded in the digest, and exists so a bad day produces a provisional digest rather
   than nothing.
+
+Two caps keep a heavy arXiv day from exhausting the free tier or running up a bill.
+`capability_delta.max_model_papers` decides how many papers get a model call, and
+`llm.max_calls_per_run` is a hard stop on the client. When the budget runs out the
+remaining papers are scored by rules. Which papers get the model is decided by a
+structural triage (code link, claim size, system claim, cross-listing) that uses day-zero
+information only, and `paper_features.capability_source` records the path each row took,
+so a rules-scored row is never mistaken for a model-scored one.
 
 Every call is logged to `data/costs/spend.jsonl` and the `llm_calls` table, so cost is
 visible from the first run. Prices in `src/llm/client.py` are mid-2026 list prices and

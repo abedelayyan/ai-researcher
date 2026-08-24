@@ -19,8 +19,8 @@ from __future__ import annotations
 
 import sqlite3
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from ..store import db
 from ..util import dates

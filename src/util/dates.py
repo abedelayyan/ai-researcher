@@ -3,13 +3,13 @@ always the calendar day the runner happens to wake up on."""
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 ISO_DATE = "%Y-%m-%d"
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def today_str() -> str:
@@ -40,13 +40,13 @@ def parse_iso(value: str | None) -> datetime | None:
         except ValueError:
             return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc)
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def arxiv_stamp(moment: datetime) -> str:
     """arXiv's submittedDate filter format, YYYYMMDDHHMM, in UTC."""
-    return moment.astimezone(timezone.utc).strftime("%Y%m%d%H%M")
+    return moment.astimezone(UTC).strftime("%Y%m%d%H%M")
 
 
 def days_between(earlier: str | date, later: str | date) -> int:

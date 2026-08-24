@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import shutil
 import sqlite3
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..score.rank import ScoredPaper
 from ..store import db
 from ..util import logging as log
-from ..util.config import REPO_ROOT, load as load_config
+from ..util.config import REPO_ROOT
+from ..util.config import load as load_config
 
 LOG = log.get("render.digest")
 

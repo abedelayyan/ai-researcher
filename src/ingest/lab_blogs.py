@@ -7,7 +7,7 @@ rubric is built around paper claims.
 from __future__ import annotations
 
 import sqlite3
-from typing import Sequence
+from collections.abc import Sequence
 
 import feedparser
 
