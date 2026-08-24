@@ -4,7 +4,11 @@
 project:
   name: signal-zero
   # Sent as the User-Agent on every outbound request, per section 12 of the spec.
-  contact: "signal-zero (https://github.com/abedelayyan/ai-researcher; mailto:kareemela@hotmail.com)"
+  # OpenAlex's polite pool wants a contact address. This repo is public and so are its
+  # Actions logs, so the address is not committed here: set SIGNAL_ZERO_CONTACT as a
+  # repository variable, or replace the placeholder below if you are happy for it to be
+  # public. Without an address the code still runs, on the anonymous pool.
+  contact: "signal-zero (https://github.com/abedelayyan/ai-researcher)"
 
 ingest:
   categories: [cs.AI, cs.LG, cs.CL, cs.CV, stat.ML]

@@ -40,11 +40,17 @@ jobs:
       - name: Collect due observations
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional. Set as a repository variable to join OpenAlex's polite pool.
+          SIGNAL_ZERO_CONTACT: ${{ vars.SIGNAL_ZERO_CONTACT }}
           SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+          # See daily.yml: dispatch inputs arrive as environment variables.
+          OBSERVE_DATE: ${{ inputs.date }}
+          OBSERVE_LIMIT: ${{ inputs.limit }}
         run: |
-          python -m src.cli outcomes \
-            ${{ inputs.date && format('--date {0}', inputs.date) || '' }} \
-            ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+          args=()
+          if [ -n "$OBSERVE_DATE" ]; then args+=(--date "$OBSERVE_DATE"); fi
+          if [ -n "$OBSERVE_LIMIT" ]; then args+=(--limit "$OBSERVE_LIMIT"); fi
+          python -m src.cli outcomes "${args[@]}"
 
       - name: Print calibration so far
         run: python -m src.cli calibration
@@ -52,5 +58,5 @@ jobs:
       - name: Commit observations
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "outcomes: observations for ${{ inputs.date || 'today' }}"
+          commit_message: "outcomes: observations recorded"
           file_pattern: data/signal.db

@@ -149,6 +149,15 @@ HTML for Pages, with an archive nav. Both carry the prediction log summary once 
 exist, hits and misses together, because showing calibration openly is what makes the
 rest believable.
 
+## Contact address
+
+OpenAlex asks for a contact address to put requests on its polite pool, and arXiv asks
+for a descriptive User-Agent. This repo is public and so are its Actions logs, so no
+address is committed. Set `SIGNAL_ZERO_CONTACT` as a repository variable, for example
+`signal-zero (https://github.com/you/repo; mailto:you@example.com)`, or edit
+`project.contact` in `config.yaml` if you would rather publish it. Without one the code
+runs on the anonymous pool, which is slower under load but works.
+
 ## Legal boundaries
 
 arXiv metadata is CC0 and can be stored and displayed. Full text is not redistributable,

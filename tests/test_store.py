@@ -96,3 +96,19 @@ def test_close_leaves_no_write_ahead_log_behind(tmp_path: Path):
     reopened = sqlite3.connect(path)
     assert reopened.execute("SELECT count(*) FROM papers").fetchone()[0] == 1
     reopened.close()
+
+
+class TestContact:
+    """The repo is public, so the contact address is configuration, not code."""
+
+    def test_the_environment_wins_over_the_committed_config(self, monkeypatch):
+        from src.util import config as config_module
+
+        monkeypatch.setenv("SIGNAL_ZERO_CONTACT", "signal-zero (mailto:someone@example.com)")
+        assert config_module.contact_email() == "someone@example.com"
+
+    def test_no_address_means_the_anonymous_pool_rather_than_a_made_up_one(self, monkeypatch):
+        from src.util import config as config_module
+
+        monkeypatch.delenv("SIGNAL_ZERO_CONTACT", raising=False)
+        assert config_module.contact_email({"project": {"contact": "signal-zero"}}) is None

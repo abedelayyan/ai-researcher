@@ -53,17 +53,25 @@ jobs:
       - name: Run the daily pipeline
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional. Set as a repository variable to join OpenAlex's polite pool.
+          SIGNAL_ZERO_CONTACT: ${{ vars.SIGNAL_ZERO_CONTACT }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+          # Dispatch inputs reach the shell as environment variables rather than being
+          # interpolated into the script, which is what stops one becoming a command.
+          RUN_DATE: ${{ inputs.date }}
+          LOOKBACK_HOURS: ${{ inputs.lookback_hours }}
+          PAPER_LIMIT: ${{ inputs.limit }}
         run: |
-          python -m src.cli daily \
-            ${{ inputs.date && format('--date {0}', inputs.date) || '' }} \
-            ${{ inputs.lookback_hours && format('--lookback-hours {0}', inputs.lookback_hours) || '' }} \
-            ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+          args=()
+          if [ -n "$RUN_DATE" ]; then args+=(--date "$RUN_DATE"); fi
+          if [ -n "$LOOKBACK_HOURS" ]; then args+=(--lookback-hours "$LOOKBACK_HOURS"); fi
+          if [ -n "$PAPER_LIMIT" ]; then args+=(--limit "$PAPER_LIMIT"); fi
+          python -m src.cli daily "${args[@]}"
 
       - name: Commit the digest, the database and the spend log
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "digest: ${{ inputs.date || 'daily run' }}"
+          commit_message: "digest: daily run"
           file_pattern: data/signal.db data/digest/*.md data/costs/*.jsonl site/**

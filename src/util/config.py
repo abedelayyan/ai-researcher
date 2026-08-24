@@ -35,12 +35,23 @@ def db_path(config: dict | None = None) -> Path:
 
 
 def user_agent(config: dict | None = None) -> str:
-    return get("project.contact", "signal-zero", config=config)
+    """The User-Agent every outbound request carries.
+
+    SIGNAL_ZERO_CONTACT wins over the committed config, so a contact address can be set
+    as a repository variable rather than published in the repo.
+    """
+    from_env = os.environ.get("SIGNAL_ZERO_CONTACT", "").strip()
+    return from_env or get("project.contact", "signal-zero", config=config)
 
 
 def contact_email(config: dict | None = None) -> str | None:
-    """The mailto address inside the contact string, for OpenAlex's polite pool."""
+    """The mailto address inside the contact string, for OpenAlex's polite pool.
+
+    None means no address is configured, and the code falls back to the anonymous pool
+    rather than inventing one.
+    """
     contact = user_agent(config)
     if "mailto:" not in contact:
         return None
-    return contact.split("mailto:", 1)[1].strip(" )>;")
+    address = contact.split("mailto:", 1)[1].strip(" )>;")
+    return address or None
