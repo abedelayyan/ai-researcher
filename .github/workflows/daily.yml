@@ -1,12 +1,13 @@
 name: daily
 
-# arXiv announces new submissions at roughly 20:00 ET, which is 00:00 UTC in summer.
-# This runs about an hour later, offset away from the top of the hour because scheduled
-# workflows bunch there and get delayed. A late or missed run is fine: the pipeline
-# widens its lookback window to cover whatever it missed.
+# arXiv announces new submissions at roughly 20:00 ET. Cron is UTC and does not shift
+# with daylight saving, so 02:17 UTC lands at 21:17 EST in winter and 22:17 EDT in
+# summer, comfortably after the announcement either way. The minute is offset from the
+# top of the hour because scheduled workflows bunch there and get delayed. A late or
+# missed run is fine: the pipeline widens its lookback window to cover what it missed.
 on:
   schedule:
-    - cron: "17 1 * * *"
+    - cron: "17 2 * * *"
   workflow_dispatch:
     inputs:
       date:

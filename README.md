@@ -126,15 +126,16 @@ move monthly. Re-check before trusting a budget.
 
 | Workflow | When | What |
 | --- | --- | --- |
-| `daily.yml` | 01:17 UTC | ingest, score, log, render, commit |
+| `daily.yml` | 02:17 UTC | ingest, score, log, render, commit |
 | `outcomes.yml` | 06:43 UTC | collect due observations, recompute labels |
 | `tests.yml` | push and PR | pytest, including the leakage test |
 | `pages.yml` | on `site/**` | publish the static digest |
 | `keepalive.yml` | Mondays | stop the 60-day scheduled-workflow cutoff |
 
-arXiv announces at roughly 20:00 ET, which is 00:00 UTC in summer, so the daily run
-starts about an hour later. The cron minute is offset from the top of the hour because
-scheduled runs bunch there and get delayed. Every run is idempotent: re-running a day
+arXiv announces at roughly 20:00 ET. Cron is UTC and does not follow daylight saving,
+so 02:17 UTC sits after the announcement in both halves of the year: 21:17 EST in winter,
+22:17 EDT in summer. The minute is offset from the top of the hour because scheduled runs
+bunch there and get delayed. Every run is idempotent: re-running a day
 re-uses stored features and overwrites the digest, and a missed day is recovered by the
 widened lookback window rather than by anyone noticing.
 

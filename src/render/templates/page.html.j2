@@ -47,7 +47,7 @@
     no upvotes, stars or citations in the ranking.</p>
 
   {% if recent_dates %}
-  <nav>{% for d in recent_dates %}<a href="{{ d }}.html">{{ d }}</a>{% endfor %}</nav>
+  <nav>{% for d in recent_dates %}<a href="{{ nav_prefix }}{{ d }}.html">{{ d }}</a>{% endfor %}</nav>
   {% endif %}
 
   {% if degraded %}

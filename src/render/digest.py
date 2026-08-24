@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
 import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
@@ -156,9 +155,16 @@ def render_markdown(context: dict) -> str:
     return "\n".join(out).strip() + "\n"
 
 
-def render_html(context: dict, recent_dates: Sequence[str] = ()) -> str:
+def render_html(
+    context: dict, recent_dates: Sequence[str] = (), *, nav_prefix: str = ""
+) -> str:
+    """Render one digest page.
+
+    nav_prefix exists because the same page is written twice: once under site/digest/,
+    where archive links sit beside it, and once as site/index.html, where they do not.
+    """
     return _environment().get_template("page.html.j2").render(
-        recent_dates=list(recent_dates), **context
+        recent_dates=list(recent_dates), nav_prefix=nav_prefix, **context
     )
 
 
@@ -174,11 +180,13 @@ def write(context: dict, config: dict | None = None, *, recent_dates: Sequence[s
     md_path = digest_dir / f"{context['date']}.md"
     md_path.write_text(render_markdown(context), encoding="utf-8")
 
-    html = render_html(context, recent_dates)
     page_path = site_dir / "digest" / f"{context['date']}.html"
-    page_path.write_text(html, encoding="utf-8")
+    page_path.write_text(render_html(context, recent_dates), encoding="utf-8")
+
     index_path = site_dir / "index.html"
-    shutil.copyfile(page_path, index_path)
+    index_path.write_text(
+        render_html(context, recent_dates, nav_prefix="digest/"), encoding="utf-8"
+    )
 
     try:
         shown = md_path.relative_to(REPO_ROOT)
